@@ -2,11 +2,13 @@ from tkinter import Tk, Menu, CENTER, END, S, Label, ttk, messagebox, Button, En
 import sqlite3 as sql
 import random, string
 
+# Creates random password for the application settings
 def create_password(length):
     characters = string.ascii_letters + string.digits + string.punctuation
     password = ''.join(random.choice(characters) for _ in range(length))
     return password
 
+# Checks if the app is opened for the first time
 def table_exists():
     with sql.connect("vt.db") as conn:
         cursor = conn.cursor()
@@ -64,14 +66,7 @@ root.geometry("700x300")
 root.title("Hesap Yöneticisi - Niuren_")
 root.resizable(False, False)
 
-def item_clicked(event):    
-    global last_click_time
-    current_time = event.time
-    delta = current_time - last_click_time
-    if delta < 300:
-        item_selected(event)
-    last_click_time = current_time
-
+# Settings screen for the selected item
 def double(Dname):
     setTop = Toplevel(root)
     setTop.geometry("300x290")
@@ -192,6 +187,7 @@ def double(Dname):
 
     setTop.mainloop()
 
+# Table of Contents
 tree = ttk.Treeview(root, columns=("İsim", "Kullanıcı Adı", "e-Mail"), show="headings")
 tree.place(relx=.5, rely=.5, anchor=CENTER)
 
@@ -200,6 +196,7 @@ tree.heading("İsim", text="İsim")
 tree.heading("Kullanıcı Adı", text="Kullanıcı Adı")
 tree.heading("e-Mail", text="e-Mail")
 
+# Double click for settings screen
 def item_selected(event):
     global double
     selected_item = tree.focus()
@@ -209,9 +206,18 @@ def item_selected(event):
     except IndexError:
         pass
 
+def item_clicked(event):    
+    global last_click_time
+    current_time = event.time
+    delta = current_time - last_click_time
+    if delta < 300:
+        item_selected(event)
+    last_click_time = current_time
+
 last_click_time = 0
 tree.bind('<Button-1>', item_clicked)
 
+# Copy to clipboard
 def copy2board(event):
     tree = event.widget
     for selected_item in tree.selection():
@@ -229,6 +235,7 @@ def copy2board(event):
 
 tree.bind('<<TreeviewSelect>>', copy2board)
 
+# Clear tree and insert contents
 tree.delete(*tree.get_children())
 with sql.connect("vt.db") as vt:
     im = vt.cursor()
@@ -243,6 +250,7 @@ for contact in contacts:
     tree.delete()
     tree.insert('', END, values=contact)
 
+# New account
 def new():
     newTop = Toplevel(root)
     newTop.geometry("300x250")
@@ -251,6 +259,7 @@ def new():
     newTop.resizable(False, False)
     newTop.grab_set()
 
+    # Press ESC to quit
     def key_pressed(event):
         if event.keysym == "Escape":
             newTop.destroy()
@@ -278,6 +287,7 @@ def new():
     note = Entry(newTop)
     note.place(x=110, y=170)
 
+    # Add button function
     def add():
         if str(name.get()) != "":
 
@@ -318,12 +328,12 @@ def new():
         else:
             messagebox.showwarning("Eksik Bilgi!", "İsim girmeniz gerekiyor!")
         
-    
     saveButton = Button(newTop, text="Ekle", command=add)
     saveButton.place(relx=0.5, rely=0.9, anchor=CENTER)
 
     newTop.mainloop()
 
+# Settings screen
 def settings():
     setsTop = Toplevel(root)
     setsTop.geometry("300x160")
@@ -344,6 +354,7 @@ def settings():
     repassword2 = Entry(setsTop, show="*")
     repassword2.place(x=130, y=90)
 
+    # Save settings button function
     def save():
         with sql.connect("vt.db") as vt:
             im = vt.cursor()
@@ -376,6 +387,7 @@ menu_bar.add_command(label="Yeni", command=new)
 menu_bar.add_command(label="Ayarlar", command=settings)
 menu_bar.add_command(label="Çıkış", command=root.quit)
 
+# Press ESC to quit, + for new account
 def key_pressed(event):
     if event.keysym == "Escape":
         root.quit()
